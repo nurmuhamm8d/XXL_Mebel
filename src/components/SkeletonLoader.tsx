@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid, Skeleton } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 
 export interface SkeletonLoaderProps {
   items: number;
@@ -8,21 +8,37 @@ export interface SkeletonLoaderProps {
 
 export function SkeletonLoader({ items }: SkeletonLoaderProps) {
   return (
-    <Grid container spacing={3}>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, minmax(0, 1fr))",
+          md: "repeat(3, minmax(0, 1fr))",
+        },
+        gap: 3,
+      }}
+    >
       {Array.from({ length: items }).map((_, index) => (
-        <Grid
+        <Box
           key={index}
-          size={{ xs: 12, sm: 6, md: 4 }}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            bgcolor: "background.paper",
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
-          <Skeleton
-            variant="rectangular"
-            height={160}
-            sx={{ borderRadius: 2, mb: 2 }}
-          />
-          <Skeleton width="70%" />
-          <Skeleton width="40%" />
-        </Grid>
+          <Skeleton variant="rectangular" height={180} />
+          <Box sx={{ p: 2 }}>
+            <Skeleton width="60%" />
+            <Skeleton width="40%" />
+            <Skeleton width="80%" />
+          </Box>
+        </Box>
       ))}
-    </Grid>
+    </Box>
   );
 }

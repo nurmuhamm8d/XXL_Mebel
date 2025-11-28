@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import type { PaletteMode } from "@mui/material";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 type ColorMode = PaletteMode;
 
@@ -27,7 +28,9 @@ const ColorModeContext = createContext<ColorModeContextValue | undefined>(
 export function useColorMode() {
   const ctx = useContext(ColorModeContext);
   if (!ctx) {
-    throw new Error("useColorMode must be used within ColorModeContext.Provider");
+    throw new Error(
+      "useColorMode must be used within ColorModeContext.Provider"
+    );
   }
   return ctx;
 }
@@ -88,7 +91,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
-            {children}
+            <AuthProvider>{children}</AuthProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </AppRouterCacheProvider>

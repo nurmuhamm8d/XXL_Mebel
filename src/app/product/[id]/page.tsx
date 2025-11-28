@@ -1,23 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useProduct } from "@/hooks/useProducts";
 import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Container,
-  Typography,
   Rating,
   Stack,
-  CircularProgress,
+  Typography,
 } from "@mui/material";
+import {
+  useProduct,
+  useCategories,
+  useUpdateProduct,
+  useDeleteProduct,
+} from "@/hooks/useProducts";
+import {
+  ProductFormDialog,
+  ProductFormValues,
+} from "@/components/ProductFormDialog";
+import { DeleteProductDialog } from "@/components/DeleteProductDialog";
 
 export default function ProductPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const productId = Number(params.id);
+
   const { data: product, isLoading, isError } = useProduct(productId);
+  const { data: categories = [] } = useCategories();
+
+  const { mutateAsync: updateProductMutation, isPending: isUpdating } =
+    useUpdateProduct();
+  const { mutateAsync: deleteProductMutation, isPending: isDeleting } =
+    useDeleteProduct();
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -42,6 +63,37 @@ export default function ProductPage() {
       </Container>
     );
   }
+
+  const handleEditSubmit = async (values: ProductFormValues) => {
+    const price =
+      values.price !== undefined && values.price !== null && values.price !== ""
+        ? Number(values.price)
+        : product.price;
+
+    let image = values.imageUrl?.trim() || product.image;
+    if (!values.imageUrl && values.imageFile) {
+      image = URL.createObjectURL(values.imageFile);
+    }
+
+    await updateProductMutation({
+      id: productId,
+      data: {
+        title: values.title || product.title,
+        price,
+        description: values.description || product.description,
+        category: values.category || product.category,
+        image,
+      },
+    });
+
+    setEditOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    await deleteProductMutation(productId);
+    setDeleteOpen(false);
+    router.push("/");
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
@@ -116,7 +168,8 @@ export default function ProductPage() {
                   size="small"
                 />
                 <Typography variant="body2" color="text.secondary">
-                  {product.rating.rate.toFixed(1)} • {product.rating.count} отзывов
+                  {product.rating.rate.toFixed(1)} • {product.rating.count}{" "}
+                  отзывов
                 </Typography>
               </Stack>
             )}
@@ -124,13 +177,47 @@ export default function ProductPage() {
           <Typography variant="body1" color="text.secondary">
             {product.description}
           </Typography>
-          <Box sx={{ mt: 3 }}>
+          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
             <Button variant="contained" size="large">
               Добавить в избранное
             </Button>
-          </Box>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => setEditOpen(true)}
+              disabled={isUpdating || isDeleting}
+            >
+              Редактировать
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              size="large"
+              onClick={() => setDeleteOpen(true)}
+              disabled={isDeleting}
+            >
+              Удалить
+            </Button>
+          </Stack>
         </Box>
       </Box>
+
+      <ProductFormDialog
+        open={editOpen}
+        mode="edit"
+        initialProduct={product}
+        categories={categories}
+        onClose={() => setEditOpen(false)}
+        onSubmit={handleEditSubmit}
+      />
+
+      <DeleteProductDialog
+        open={deleteOpen}
+        title={product.title}
+        loading={isDeleting}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </Container>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Grid, Pagination, Typography, Fade } from "@mui/material";
+import { Box, Container, Pagination, Typography, Fade } from "@mui/material";
 import { Product } from "@/types";
 import { ProductCard } from "./ProductCard";
 import { SkeletonLoader } from "./SkeletonLoader";
@@ -20,7 +20,7 @@ export function ProductList({
   total,
   page,
   pageSize,
-  onPageChange
+  onPageChange,
 }: ProductListProps) {
   if (isLoading) {
     return (
@@ -47,20 +47,25 @@ export function ProductList({
 
   return (
     <Container sx={{ py: 4 }}>
-      <Grid container spacing={3}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, minmax(0, 1fr))",
+            md: "repeat(3, minmax(0, 1fr))",
+          },
+          gap: 3,
+        }}
+      >
         {products.map((product) => (
-          <Grid
-            key={product.id}
-            size={{ xs: 12, sm: 6, md: 4 }}
-          >
-            <Fade in timeout={400}>
-              <Box>
-                <ProductCard product={product} />
-              </Box>
-            </Fade>
-          </Grid>
+          <Fade in timeout={400} key={product.id}>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <ProductCard product={product} />
+            </Box>
+          </Fade>
         ))}
-      </Grid>
+      </Box>
 
       {total > pageSize && (
         <Box mt={4} display="flex" justifyContent="center">

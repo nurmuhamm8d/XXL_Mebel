@@ -1,8 +1,13 @@
+import { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AUTH_COOKIE_NAME } from "@/config/auth";
 
-export default async function RootPage() {
+export default async function CatalogLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const cookieStore = await cookies();
   const authCookie = cookieStore.get(AUTH_COOKIE_NAME);
 
@@ -10,5 +15,5 @@ export default async function RootPage() {
     redirect("/auth/login");
   }
 
-  redirect("/catalog");
+  return <>{children}</>;
 }
